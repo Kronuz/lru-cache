@@ -5,7 +5,11 @@ add_library(lru_cache INTERFACE)
 target_include_directories(lru_cache INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_features(lru_cache INTERFACE cxx_std_17)
 
-enable_testing()
-add_executable(lru_cache_test test/test.cc)
-target_link_libraries(lru_cache_test PRIVATE lru_cache)
-add_test(NAME lru_cache COMMAND lru_cache_test)
+# Only build the smoke test when this repo is the top-level project, so
+# consumers (e.g. via FetchContent) don't build our tests.
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  enable_testing()
+  add_executable(lru_cache_test test/test.cc)
+  target_link_libraries(lru_cache_test PRIVATE lru_cache)
+  add_test(NAME lru_cache COMMAND lru_cache_test)
+endif()
