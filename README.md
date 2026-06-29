@@ -186,9 +186,9 @@ returns a `GetAction` (`lru.h:328`): the same four as `DropAction` minus `stop`
 
 ### Iteration
 
-- `begin()` / `end()` (and `cbegin()` / `cend()`) iterate in recency order, most
-  recent first (`lru.h:763`). On an `aging_lru`, the iterator skips expired
-  entries as it advances (`lru.h:238`).
+- `begin()` / `end()` (and `cbegin()` / `cend()`) iterate in recency order, least
+  recently used first (the eviction end) and most recently used last (`lru.h:763`).
+  On an `aging_lru`, the iterator skips expired entries as it advances (`lru.h:238`).
 - Iterate-by-age is available through the `iterator_by_age` / `const_iterator_by_age`
   typedefs (`lru.h:312`), constructed as `iterator_by_age(this, &this->_end)`.
   These walk the second, age-ordered list that only `aging_base_node` maintains
