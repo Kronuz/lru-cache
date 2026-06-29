@@ -238,6 +238,25 @@ warning from `std::iterator`; that is expected too.
   (`erase`, an evicting `find`, a trim that evicts). Treat them like
   `std::unordered_map` iterators.
 
+## Examples
+
+[`examples/demo.cc`](examples/demo.cc) is a runnable tour. A top-level CMake build
+produces it next to the test:
+
+```sh
+cmake -B build && cmake --build build && ./build/lru_cache_demo
+```
+
+It builds a capacity-3 cache and prints the cache state in recency order
+(least-recently-used end first, most-recently-used last) after each operation:
+filling to capacity, a `find` hit that renews a key (and watching it survive
+past a neighbour because of it), a miss returning `end()`, an `exists` peek that
+does not renew, an over-capacity insert that leaves the cache at `cap + 1` until
+the next insert's trim evicts the LRU entry (the trim-before-insert behavior),
+`at()` throwing `std::out_of_range` on the evicted key, and `operator[]`
+reassigning an existing key versus default-constructing a new one. So you can
+watch recency drive who lives and who gets evicted.
+
 ## Provenance
 
 Extracted from [Xapiand](https://github.com/Kronuz/Xapiand), where it caches

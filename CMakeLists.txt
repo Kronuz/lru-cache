@@ -12,4 +12,8 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   add_executable(lru_cache_test test/test.cc)
   target_link_libraries(lru_cache_test PRIVATE lru_cache)
   add_test(NAME lru_cache COMMAND lru_cache_test)
+
+  # A runnable tour of the library (not a test): build & run ./build/lru_cache_demo
+  add_executable(lru_cache_demo examples/demo.cc)
+  target_link_libraries(lru_cache_demo PRIVATE lru_cache)
 endif()
