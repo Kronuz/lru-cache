@@ -81,10 +81,42 @@ static void test_mutate_in_place() {
 	std::printf("  at_and: in-place value mutation persists\n");
 }
 
+// The at_and_* / get_and_* convenience wrappers return the value (T&), like at()
+// and get() -- not an iterator. They were previously mis-declared as returning
+// iterator; because they are templates, that only failed to compile once actually
+// instantiated. This regression test instantiates them so the return type stays
+// pinned to T&.
+static void test_action_wrappers() {
+	Cache cache(3);
+	cache.insert(std::make_pair("a", 1));
+	cache.insert(std::make_pair("b", 2));
+
+	// at_and_* return the stored value; the reference is mutable.
+	assert(cache.at_and_leave("a") == 1);
+	assert(cache.at_and_renew("a") == 1);
+	assert(cache.at_and_relink("b") == 2);
+	cache.at_and_leave("a") = 111;
+	assert(cache.at("a") == 111);
+
+	// The const overload also returns the value.
+	const Cache& cref = cache;
+	assert(cref.at_and_leave("b") == 2);
+
+	// get_and_* insert a default when the key is absent, else return the existing
+	// value, and hand back a T& either way.
+	assert(cache.get_and_leave("c", 3) == 3);    // inserted
+	assert(cache.at("c") == 3);
+	assert(cache.get_and_renew("c", 99) == 3);   // already present: keeps 3
+	assert(cache.get_and_relink("d", 4) == 4);   // inserted
+	assert(cache.at("d") == 4);
+	std::printf("  at_and_*/get_and_* wrappers return T& and behave correctly\n");
+}
+
 int main() {
 	test_eviction_order();
 	test_drop_leave();
 	test_mutate_in_place();
-	std::printf("lru-cache OK: eviction, DropAction::leave, in-place mutation\n");
+	test_action_wrappers();
+	std::printf("lru-cache OK: eviction, DropAction::leave, in-place mutation, action wrappers\n");
 	return 0;
 }

@@ -516,28 +516,28 @@ public:
 	}
 
 	template <typename K>
-	iterator at_and_leave(const K& key) {
+	T& at_and_leave(const K& key) {
 		return at_and([](const value_type&, bool, bool) {
 			return GetAction::leave;
 		}, key);
 	}
 
 	template <typename K>
-	iterator at_and_renew(const K& key) {
+	T& at_and_renew(const K& key) {
 		return at_and([](const value_type&, bool, bool) {
 			return GetAction::renew;
 		}, key);
 	}
 
 	template <typename K>
-	iterator at_and_relink(const K& key) {
+	T& at_and_relink(const K& key) {
 		return at_and([](const value_type&, bool, bool) {
 			return GetAction::relink;
 		}, key);
 	}
 
 	template <typename OnGet, typename K>
-	T& at_and(const OnGet& on_get, const K& key) const {
+	const T& at_and(const OnGet& on_get, const K& key) const {
 		auto it = find_and(on_get, key);
 		if (it == end()) {
 			throw std::out_of_range("lru::at: key not found");
@@ -546,40 +546,19 @@ public:
 	}
 
 	template <typename K>
-	const_iterator at_and_leave(const K& key) const {
+	const T& at_and_leave(const K& key) const {
 		return at_and([](const value_type&, bool, bool) {
 			return GetAction::leave;
 		}, key);
 	}
 
 	template <typename K>
-	T& at(const K& key) const {
+	const T& at(const K& key) const {
 		auto it = find(key);
 		if (it == end()) {
 			throw std::out_of_range("lru::at: key not found");
 		}
 		return it->second;
-	}
-
-	template <typename K>
-	iterator get_and_leave(const K& key, T&& default_) {
-		return get_and([](const value_type&, bool, bool) {
-			return GetAction::leave;
-		}, key, default_);
-	}
-
-	template <typename K>
-	iterator get_and_renew(const K& key, T&& default_) {
-		return get_and([](const value_type&, bool, bool) {
-			return GetAction::renew;
-		}, key, default_);
-	}
-
-	template <typename K>
-	iterator get_and_relink(const K& key, T&& default_) {
-		return get_and([](const value_type&, bool, bool) {
-			return GetAction::relink;
-		}, key, default_);
 	}
 
 	template <typename OnGet, typename OnDrop, typename K>
@@ -591,24 +570,32 @@ public:
 		return it->second;
 	}
 
+	// Default drop policy for the get_and_* convenience wrappers: evict on
+	// overflow/expiry, otherwise stop walking (mirrors get()).
 	template <typename K, typename... Args>
-	iterator get_and_leave(const K& key, Args&&... args) {
+	T& get_and_leave(const K& key, Args&&... args) {
 		return get_and([](const value_type&, bool, bool) {
 			return GetAction::leave;
+		}, [](const value_type&, bool overflowed, bool expired) {
+			return (overflowed || expired) ? DropAction::evict : DropAction::stop;
 		}, key, std::forward<Args>(args)...);
 	}
 
 	template <typename K, typename... Args>
-	iterator get_and_renew(const K& key, Args&&... args) {
+	T& get_and_renew(const K& key, Args&&... args) {
 		return get_and([](const value_type&, bool, bool) {
 			return GetAction::renew;
+		}, [](const value_type&, bool overflowed, bool expired) {
+			return (overflowed || expired) ? DropAction::evict : DropAction::stop;
 		}, key, std::forward<Args>(args)...);
 	}
 
 	template <typename K, typename... Args>
-	iterator get_and_relink(const K& key, Args&&... args) {
+	T& get_and_relink(const K& key, Args&&... args) {
 		return get_and([](const value_type&, bool, bool) {
 			return GetAction::relink;
+		}, [](const value_type&, bool overflowed, bool expired) {
+			return (overflowed || expired) ? DropAction::evict : DropAction::stop;
 		}, key, std::forward<Args>(args)...);
 	}
 
@@ -616,7 +603,7 @@ public:
 	T& get_and(const OnGet& on_get, const OnDrop& on_drop, const K& key, Args&&... args) {
 		auto it = find_and(on_get, key);
 		if (it == end()) {
-			it = emplace_and(on_drop, key, T(std::forward<Args>(args)...));
+			it = emplace_and(on_drop, key, T(std::forward<Args>(args)...)).first;
 		}
 		return it->second;
 	}
