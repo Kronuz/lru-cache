@@ -1,5 +1,7 @@
 # lru-cache (`lru`)
 
+[![CI](https://github.com/Kronuz/lru-cache/actions/workflows/ci.yml/badge.svg)](https://github.com/Kronuz/lru-cache/actions/workflows/ci.yml)
+
 A header-only LRU cache for C++17: an intrusive doubly-linked list threaded through nodes stored in a `std::unordered_map`, with optional TTL eviction.
 
 ## What it is
