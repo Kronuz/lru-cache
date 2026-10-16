@@ -1,0 +1,27 @@
+# lru-cache: an intrusive recency list threaded through unordered_map nodes.
+# Render: d2 --layout elk --sketch --theme 302 docs/lru-cache.d2 docs/lru-cache.svg
+direction: right
+
+map: std::unordered_map {
+  a: "key A → node"
+  b: "key B → node"
+  c: "key C → node"
+}
+
+recency: recency list {
+  label: "recency list\nLRU end … MRU end"
+}
+
+age: age list {
+  label: "age list (aging_lru)\noldest … newest"
+}
+
+policy: OnDrop · OnGet {
+  label: "policy callbacks\nleave · renew · relink · evict · stop"
+}
+
+map.a -> map.b: "prev/next" {style.stroke-dash: 3}
+map.b -> map.c {style.stroke-dash: 3}
+recency -> map.a
+age -> map.c
+policy -> recency: "trim and lookup decide"
