@@ -9,10 +9,13 @@ Class: `lru::lru<Key, T, Hash = std::hash<Key>, KeyEqual = std::equal_to<Key>, N
 
 ```cpp
 lru(size_t max_size = 0, std::chrono::milliseconds max_age = 0);
+lru(size_t max_size, std::chrono::milliseconds max_age, const Allocator& allocator);
 ```
 
 `max_size` of 0 means unbounded. `max_age` of 0 means no TTL.
 A non-aging cache with non-zero `max_age` asserts.
+
+The three-argument constructor passes the allocator instance to the backing map, including its rebound node and bucket allocations. `allocator_type` names the configured allocator. A stateful allocator need not be default-constructible when supplied explicitly. The existing constructor keeps its default allocation policy.
 
 ## Insertion
 

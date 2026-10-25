@@ -305,6 +305,7 @@ public:
 	typedef T mapped_type;
 	typedef Node node_type;
 	typedef typename Node::base_node_type base_node_type;
+	typedef Allocator allocator_type;
 	typedef std::pair<const key_type, mapped_type> value_type;
 
 	typedef detail::iterator<const lru<Key, T, Hash, KeyEqual, Node, Allocator>, const std::pair<const Key, T>, const Node, const typename Node::base_node_type> const_iterator;
@@ -332,7 +333,11 @@ public:
 		evict,    // remove item
 	};
 
-	lru(size_t max_size = 0, std::chrono::milliseconds max_age = std::chrono::milliseconds(0)) {
+	lru(size_t max_size = 0, std::chrono::milliseconds max_age = std::chrono::milliseconds(0))
+		: lru(max_size, max_age, Allocator()) { }
+
+	lru(size_t max_size, std::chrono::milliseconds max_age, const Allocator& allocator)
+		: _map(allocator) {
 		this->_max_size = max_size ? max_size : max;
 		this->_max_age = max_age;
 		if (typeid(typename Node::base_node_type) != typeid(aging_base_node)) {
