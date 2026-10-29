@@ -104,3 +104,5 @@ pass on every platform.
 MIT, Copyright (c) 2015-2019 Dubalu LLC. See [LICENSE](LICENSE). Extracted from
 [Xapiand](https://github.com/Kronuz/Xapiand), where it caches schemas and compiled
 scripts.
+
+`erase(key)` reports one removed entry even when the cache becomes empty; a missing key reports zero. See the [removal API](docs/API.md#removal).

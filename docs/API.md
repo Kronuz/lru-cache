@@ -57,7 +57,7 @@ returns a `GetAction`: the same four as `DropAction` minus `stop`
 
 ## Removal
 
-- `erase(key)` — remove by key, returns the count removed (0 or 1).
+- `erase(key)` — remove by key, returns 1 for a removed matching entry, including the final entry, or 0 when no matching entry is found.
 - `erase(const_iterator)` — remove by iterator, returns an iterator to the next
   entry.
 - `clear()` — drop everything.

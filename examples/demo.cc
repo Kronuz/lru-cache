@@ -100,6 +100,11 @@ int main() {
 	fresh = "seven";
 	dump("after [4]/[7]", cache);
 
+	cache_t singleton(1);
+	singleton.emplace(9, "nine");
+	const auto removed = singleton.erase(9);
+	std::printf("  erase(9) -> %zu removed, %zu remain\n", removed, singleton.size());
+
 	std::puts("\ndone.");
 	return 0;
 }

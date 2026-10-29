@@ -667,9 +667,8 @@ public:
 	size_t erase(const Key& key) {
 		auto it = find(key);
 		if (it != end()) {
-			if (erase(it) != end()) {
-				return 1;
-			}
+			erase(it);
+			return 1;
 		}
 		return 0;
 	}
