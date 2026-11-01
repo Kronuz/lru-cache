@@ -97,19 +97,27 @@ Not for:
 
 ## ⚡ Performance
 
-`bench/bench.cc` runs `find_and_renew` and `emplace` on a miss over skewed keys
-drawn from twice the capacity, so about half the lookups hit. The comparator is
-the textbook LRU, a `std::list` of entries and a `std::unordered_map` from key to
-list iterator, built with the capacity plus one because `emplace` trims before it
-inserts; the hit counts of the two agree. ns per operation, `lru::lru` / textbook,
-best of 5, the range over two runs; Apple clang 17.0.0, Release:
+[`lru_cache_bench`](bench/bench.cc) times a cache in front of a slower source: each
+operation looks a key up with `find_and_renew` and, on a miss, inserts it with
+`emplace`. Keys are skewed towards small values and drawn from a universe twice the
+capacity, so about half the lookups hit. The comparator is the textbook LRU, a
+`std::list` of entries (most recent first) and a `std::unordered_map` from key to list
+iterator (`ListMapLru` in the same file); no single LRU library is the usual choice in
+C++, and this is the structure hand-written caches use. It is built with the capacity
+plus one because `lru::lru` trims before it inserts, and the benchmark checks on every
+row that both caches count the same hits. Each cell is ns per operation, the range
+over two runs of best-of-5; "× faster" is the textbook's time over `lru::lru`'s in the
+better run, so a value below 1 is a loss.
 
-| keys, capacity | Apple M4 Pro | Intel Core i9-9980HK |
-|---|---|---|
-| `uint64_t`, 1024 | 23.3 to 23.4 / 26.0 to 28.8 | 90.3 to 94.2 / 87.4 to 94.9 |
-| `uint64_t`, 65536 | 33.7 to 34.5 / 45.6 to 45.8 | 236.2 to 251.9 / 273.5 to 279.1 |
-| `uint64_t`, 1048576 | 98.8 to 125.5 / 115.5 to 140.1 | 331.1 to 333.0 / 328.8 to 335.1 |
-| `std::string`, 65536 | 73.0 to 77.7 / 80.9 to 95.9 | 260.8 to 266.4 / 439.4 to 442.5 |
+| keys, capacity | M4 Pro `lru::lru` | M4 Pro textbook | M4 Pro × faster | i9 `lru::lru` | i9 textbook | i9 × faster |
+|---|---:|---:|---:|---:|---:|---:|
+| `uint64_t`, 1,024 | 23.3 to 23.4 | 26.0 to 28.8 | 1.12 | 90.3 to 94.2 | 87.4 to 94.9 | 0.97 |
+| `uint64_t`, 65,536 | 33.7 to 34.5 | 45.6 to 45.8 | 1.35 | 236.2 to 251.9 | 273.5 to 279.1 | 1.16 |
+| `uint64_t`, 1,048,576 | 98.8 to 125.5 | 115.5 to 140.1 | 1.17 | 331.1 to 333.0 | 328.8 to 335.1 | 0.99 |
+| `std::string`, 65,536 | 73.0 to 77.7 | 80.9 to 95.9 | 1.11 | 260.8 to 266.4 | 439.4 to 442.5 | 1.68 |
+
+Apple M4 Pro (macOS 26) and Intel Core i9-9980HK (macOS 15, x86-64), one thread,
+Apple clang 17.0.0 with `-O3 -DNDEBUG` (CMake Release).
 
 ```sh
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DLRU_CACHE_BUILD_BENCH=ON
@@ -119,7 +127,8 @@ cmake --build build --target lru_cache_bench
 
 A lookup touches one hash and one node, and renewing relinks pointers already in
 hand. At a million entries both caches spend their time on cache misses in the
-hash table, and the gap closes.
+hash table, and the gap closes; on the i9 the two are level at 1,024 and at a
+million entries.
 
 ## 📚 Documentation
 
