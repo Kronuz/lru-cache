@@ -105,16 +105,16 @@ capacity, so about half the lookups hit. The comparator is the textbook LRU, a
 iterator (`ListMapLru` in the same file); no single LRU library is the usual choice in
 C++, and this is the structure hand-written caches use. It is built with the capacity
 plus one because `lru::lru` trims before it inserts, and the benchmark checks on every
-row that both caches count the same hits. Each cell is ns per operation, the range
-over two runs of best-of-5; "× faster" is the textbook's time over `lru::lru`'s in the
-better run, so a value below 1 is a loss.
+row that both caches count the same hits. Each cell is ns per operation, the better of
+two runs of best-of-5; "× faster" is the textbook's time over `lru::lru`'s, so a value
+below 1 is a loss.
 
 | keys, capacity | M4 Pro `lru::lru` | M4 Pro textbook | M4 Pro × faster | i9 `lru::lru` | i9 textbook | i9 × faster |
 |---|---:|---:|---:|---:|---:|---:|
-| `uint64_t`, 1,024 | 23.3 to 23.4 | 26.0 to 28.8 | 1.12 | 90.3 to 94.2 | 87.4 to 94.9 | 0.97 |
-| `uint64_t`, 65,536 | 33.7 to 34.5 | 45.6 to 45.8 | 1.35 | 236.2 to 251.9 | 273.5 to 279.1 | 1.16 |
-| `uint64_t`, 1,048,576 | 98.8 to 125.5 | 115.5 to 140.1 | 1.17 | 331.1 to 333.0 | 328.8 to 335.1 | 0.99 |
-| `std::string`, 65,536 | 73.0 to 77.7 | 80.9 to 95.9 | 1.11 | 260.8 to 266.4 | 439.4 to 442.5 | 1.68 |
+| `uint64_t`, 1,024 | 23.0 | 28.1 | 1.22 | 90.3 | 87.4 | 0.97 |
+| `uint64_t`, 65,536 | 34.9 | 46.6 | 1.34 | 236 | 274 | 1.16 |
+| `uint64_t`, 1,048,576 | 138 | 132 | 0.95 | 331 | 329 | 0.99 |
+| `std::string`, 65,536 | 78.1 | 82.4 | 1.06 | 261 | 439 | 1.68 |
 
 Apple M4 Pro (macOS 26) and Intel Core i9-9980HK (macOS 15, x86-64), one thread,
 Apple clang 17.0.0 with `-O3 -DNDEBUG` (CMake Release).
@@ -127,8 +127,9 @@ cmake --build build --target lru_cache_bench
 
 A lookup touches one hash and one node, and renewing relinks pointers already in
 hand. At a million entries both caches spend their time on cache misses in the
-hash table, and the gap closes; on the i9 the two are level at 1,024 and at a
-million entries.
+hash table and the two are level (the runs differ by up to 25% there); on the i9 they
+are level at 1,024 entries too, and the textbook cache is ahead of `lru::lru` by 5%
+on the M4 Pro at a million.
 
 ## 📚 Documentation
 
