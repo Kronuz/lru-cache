@@ -14,10 +14,9 @@ bench/bench.cc     lru::lru against the textbook std::list + std::unordered_map 
 CMakeLists.txt     INTERFACE target lru_cache (alias lru_cache::lru_cache), the test, the demo.
 README.md          What it is, install, quick start.
 docs/API.md        The API reference and caveats.
-docs/lru-cache.d2  The README diagram's source (docs/lru-cache.svg is rendered from it).
 examples/demo.cc   A runnable tour (target lru_cache_demo).
 ARCHITECTURE.md    Internal design.
-LICENSE            MIT, Copyright (c) 2015-2019 Dubalu LLC.
+LICENSE            MIT, Copyright (c) 2026 Germán Méndez Bravo and (c) 2015-2020 Dubalu LLC.
 ```
 
 There is no `src/`, no build system to speak of beyond the CMake glue, and no
