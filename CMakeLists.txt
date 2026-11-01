@@ -21,6 +21,17 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   target_link_libraries(lru_cache_erase_test PRIVATE lru_cache)
   add_test(NAME lru_cache_erase COMMAND lru_cache_erase_test)
 
+  # Benchmark against the textbook list + unordered_map LRU (off by default; no comparator
+  # library is needed):
+  #   cmake -B build -DCMAKE_BUILD_TYPE=Release -DLRU_CACHE_BUILD_BENCH=ON && cmake --build build
+  #   ./build/lru_cache_bench
+  option(LRU_CACHE_BUILD_BENCH "Build bench/bench.cc" OFF)
+  if(LRU_CACHE_BUILD_BENCH)
+    add_executable(lru_cache_bench bench/bench.cc)
+    target_link_libraries(lru_cache_bench PRIVATE lru_cache)
+    target_compile_options(lru_cache_bench PRIVATE -O3 -DNDEBUG)
+  endif()
+
   # A runnable tour of the library (not a test): build & run ./build/lru_cache_demo
   add_executable(lru_cache_demo examples/demo.cc)
   target_link_libraries(lru_cache_demo PRIVATE lru_cache)

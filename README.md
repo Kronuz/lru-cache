@@ -76,6 +76,41 @@ you can watch recency decide who stays.
 - ❌ A hard capacity at every instant: the cache trims before an insert, so right
   after an overflowing insert it can hold one extra entry until the next trim.
 
+## ⚡ Performance
+
+`bench/bench.cc` runs `find_and_renew` and `emplace` on a miss over keys skewed towards small
+values, drawn from twice the capacity, so about half the lookups hit; ns per operation, best of 5,
+two runs each. The comparator is the textbook LRU, a `std::list` of entries and a
+`std::unordered_map` from key to list iterator, built with the capacity plus one because `emplace`
+trims before it inserts; the hit counts of the two agree.
+
+Apple M4 Pro (arm64, Apple clang 17.0.0), `lru::lru` / textbook:
+
+| keys | capacity | ns per operation | ratio |
+|---|---|---|---|
+| `uint64_t` | 1024 | 23.4, 23.3 / 26.0, 28.8 | 1.11, 1.24 |
+| `uint64_t` | 65536 | 34.5, 33.7 / 45.8, 45.6 | 1.33, 1.35 |
+| `uint64_t` | 1048576 | 125.5, 98.8 / 140.1, 115.5 | 1.12, 1.17 |
+| `std::string` | 65536 | 77.7, 73.0 / 95.9, 80.9 | 1.23, 1.11 |
+
+Intel i9-9980HK (x86_64, Apple clang 17.0.0):
+
+| keys | capacity | ns per operation | ratio |
+|---|---|---|---|
+| `uint64_t` | 1024 | 94.2, 90.3 / 94.9, 87.4 | 1.01, 0.97 |
+| `uint64_t` | 65536 | 251.9, 236.2 / 279.1, 273.5 | 1.11, 1.16 |
+| `uint64_t` | 1048576 | 331.1, 333.0 / 335.1, 328.8 | 1.01, 0.99 |
+| `std::string` | 65536 | 260.8, 266.4 / 439.4, 442.5 | 1.69, 1.66 |
+
+The nodes live in the map, so a lookup is one hash and one node, and renewing is a relink of
+pointers already in hand. At a million entries both caches spend their time on cache misses in the
+hash table and the gap closes.
+
+```sh
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DLRU_CACHE_BUILD_BENCH=ON
+cmake --build build --target lru_cache_bench && ./build/lru_cache_bench
+```
+
 ## 📚 Documentation
 
 - [docs/API.md](docs/API.md): construction, insertion, lookup, the callbacks,

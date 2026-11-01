@@ -8,6 +8,9 @@ Guidance for AI agents and new contributors working in this repo. Read
 ```
 lru.h              The entire library. Header-only, ~810 lines. Everything is here.
 test/test.cc       Smoke test. Builds and runs in seconds.
+test/allocator.cc  A counting allocator that can refuse: the cache's allocations go through it. CTest test `lru_cache_allocator`.
+test/erase.cc      `erase(key)` and the removal results. CTest test `lru_cache_erase`.
+bench/bench.cc     lru::lru against the textbook std::list + std::unordered_map LRU (LRU_CACHE_BUILD_BENCH=ON).
 CMakeLists.txt     INTERFACE target lru_cache (alias lru_cache::lru_cache), the test, the demo.
 README.md          What it is, install, quick start.
 docs/API.md        The API reference and caveats.
