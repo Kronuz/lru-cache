@@ -111,10 +111,10 @@ below 1 is a loss.
 
 | keys, capacity | M4 Pro `lru::lru` | M4 Pro textbook | M4 Pro × faster | i9 `lru::lru` | i9 textbook | i9 × faster |
 |---|---:|---:|---:|---:|---:|---:|
-| `uint64_t`, 1,024 | 23.0 | 28.1 | 1.22 | 90.3 | 87.4 | 0.97 |
-| `uint64_t`, 65,536 | 34.9 | 46.6 | 1.34 | 236 | 274 | 1.16 |
-| `uint64_t`, 1,048,576 | 138 | 132 | 0.95 | 331 | 329 | 0.99 |
-| `std::string`, 65,536 | 78.1 | 82.4 | 1.06 | 261 | 439 | 1.68 |
+| `uint64_t`, 1,024 | 23.0 | 28.1 | 1.22 | 82.9 | 82.3 | 0.99 |
+| `uint64_t`, 65,536 | 34.9 | 46.6 | 1.34 | 215 | 250 | 1.16 |
+| `uint64_t`, 1,048,576 | 138 | 132 | 0.95 | 387 | 398 | 1.03 |
+| `std::string`, 65,536 | 78.1 | 82.4 | 1.06 | 270 | 438 | 1.63 |
 
 Apple M4 Pro (macOS 26) and Intel Core i9-9980HK (macOS 15, x86-64), one thread,
 Apple clang 17.0.0 with `-O3 -DNDEBUG` (CMake Release).
